@@ -1,6 +1,6 @@
 import Joi from "joi";
 
-import { phoneRegexp } from "../constants/contacts";
+import { phoneRegexp } from "../constants/contacts.js";
 
 export const createContactSchema = Joi.object({
   name: Joi.string().min(2).max(50).required(),

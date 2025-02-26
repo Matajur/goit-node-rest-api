@@ -40,7 +40,7 @@ movieRouter.put(
   ctrlWrapper(updateMovie)
 );
 
-contactsRouter.patch(
+movieRouter.patch(
   "/:id/favorite",
   isEmptyBody,
   validateBody(updateMovieSchema),

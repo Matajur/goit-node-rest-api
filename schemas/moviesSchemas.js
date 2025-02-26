@@ -1,6 +1,6 @@
 import Joi from "joi";
 
-import { typeList, releaseYearRegexp } from "../constants/movies";
+import { typeList, releaseYearRegexp } from "../constants/movies.js";
 
 export const createMovieSchema = Joi.object({
   title: Joi.string().required(),

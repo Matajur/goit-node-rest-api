@@ -5,7 +5,7 @@ import "dotenv/config";
 
 import movieRouter from "./routes/moviesRouter.js";
 import contactsRouter from "./routes/contactsRouter.js";
-import validationRouter from "./routes/validateRouter.js";
+import validationRouter from "./routes/validationRouter.js";
 
 const app = express();
 

@@ -5,7 +5,7 @@ import ctrlWrapper from "../decorators/ctrlWrapper.js";
 import {
   getMoviesValidations,
   getContactsValidations,
-} from "../controllers/validationControllers";
+} from "../controllers/validationControllers.js";
 
 const validationRouter = Router();
 

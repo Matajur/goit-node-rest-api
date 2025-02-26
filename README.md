@@ -1,80 +1,71 @@
 # Tier 4. Module 5 - Fullstack. Back End Development: Node.js
-## Homework for Topic 4 - REST API
+
+## Homework for Topic 6 - PostgresSQL and Sequelize
 
 ### Technical task
 
-Write a REST API to work with a collection of contacts. To work with the REST API, use [Postman](https://www.getpostman.com/).
+Create a branch `03-postgresql` from the `master` branch. Continue creating the REST API to work with the contact collection.
 
 #### Step 1
 
-Create a repository named `goit-node-rest-api` and place the files from the [src](https://github.com/goitacademy/neo-nodejs-homework/tree/main/hw2) folder on the main branch (`main`). Note: the `src` folder should not be in the repository, you are only interested in its contents.
+Create an account on [Render](https://render.com/). Then create a new PostgresSQL database in the account, which should be called `db-contacts`:
 
-Create a `hw02-express` branch from the `main` branch.
-
-Install the modules with the command
-
-```bash
-npm i
-```
+![New DB in Render](./readme-img/render.png)
 
 #### Step 2
 
-In the `contactsServices.js` file (located in the `services` folder), copy the functions from the `contacts.js` file from the homework for module 1.
+Install the [pgAdmin](https://www.pgadmin.org/download/) or [DBeaver](https://dbeaver.io/) graphical editor for convenient work with the PosgresSQL database. Connect to the created cloud database via the graphical editor and create the `contacts` table.
+
+![New table in DBeaver](./readme-img/dbeaver.png)
 
 #### Step 3
 
-Write the controllers in the `contactsControllers.js` file (located in the `controllers` folder) taking into account the following requirements.
+Use the source code from **homework #2** and replace storing contacts from a json file with a database you created.
 
-The REST API must support the following routes.
+- Write code to create a connection to PosgresSQL using [Sequelize](https://www.npmjs.com/package/sequelize).
+- If the connection is successful, print the message `"Database connection successful"` to the console.
+- Be sure to handle the connection error. Print the error message to the console and end the process using `process.exit(1)`.
+- In the query processing functions, replace the code for CRUD operations on contacts from a file with Sequelize methods for working with a collection of contacts in the database.
 
-##### @ GET /api/contacts
+**Sequelize model `contacts`:**
 
-- Calls the `listContacts` service function to work with the `contacts.json` json file
+```JS
+const User = sequelize.define(
+  'Contact', {
+    name: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    email: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    phone: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    favorite: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+    },
+  }
+```
 
-- Returns an array of all contacts in json format with a `200` status
+#### Step 4
 
-##### @ GET /api/contacts/:id
+We have an additional `favorite` status field in our contacts, which takes the logical value `true` or `false`. It is responsible for whether the specified contact is in the favorites or not. It is necessary to implement a new router to update the contact status:
 
-- Calls the `getContactById` service function to work with the `contacts.json` json file
+**PATCH /api/contacts/:contactId/favorite**
 
-- If the contact by `id` is found, returns the contact object in json format with a `200` status
-
-- If the contact by `id` is not found, returns json in the `{"message": "Not found"}` format with a `404` status
-
-##### @ DELETE /api/contacts/:id
-
-- Calls the `removeContact` service function to work with the `contacts.json` json file
-
-- If the contact by `id` is found and deleted, returns the deleted contact object in json format with status `200`
-- If the contact by `id` is not found, returns json format `{"message": "Not found"}` with status `404`
-
-##### @ POST /api/contacts
-
-- Gets `body` in json format with fields `{name, email, phone}`. All fields are required - for validation, create a schema in the `contactsSchemas.js` file (located in the `schemas` folder) using the `joi` package
-- If there are no required fields in `body` (or the passed fields have an invalid value), returns json in the `{"message": error.message}` format (where `error.message` is a meaningful message with the essence of the error) with status `400`
-- If `body` is valid, calls the `addContact` service function to work with the `contacts.json` json file, passing it data from `body`
-- As a result of the function, returns a newly created object with the `{id, name, email, phone}` fields and the `201` status
-
-##### @ PUT /api/contacts/:id
-
-- Gets `body` in json format with any set of updated fields (`name`, `email`, `phone`) (it is not necessary to require all fields in the body as mandatory: if any of the fields is not passed, it must be saved in the contact with the value that was before the update)
-- If the update request is made without passing at least one field in the `body`, returns json of the `{"message": "Body must have at least one field"}` format with the `400` status.
-- The fields passed in the body must be validated - for validation, create a schema in the `contactsSchemas.js` file (located in the `schemas` folder) using the `joi` package. If the passed fields have an invalid value, returns json of the format `{"message": error.message}` (where `error.message` is a meaningful message with the essence of the error) with status `400`
-- If everything is fine with `body`, calls the `updateContact` service function, which should be created in the `contactsServices.js` file (located in the `services` folder). This function should accept the `id` of the contact to be updated and data from `body`, and update the contact in the json file `contacts.json`
-- As a result of the function, returns the updated contact object with status `200`.
-- If the contact by `id` is not found, returns json of format `{"message": "Not found"}` with status `404`
-
-##### Please note
-
-- Validation of `body` can be performed either in the controller or by creating a separate middleware for these purposes, which will be called by the controller. To create a middleware, you can use the `validateBody.js` function, which you will find in the `helpers` folder
-- To work with errors, you can use the `HttpError.js` function, which you will find in the `helpers` folder
-
-If you will not use the specified functions, remove them from the project before sending the work to the mentor for review
+- Receives the `contactId` parameter
+- Receives the `body` in json format with the `favorite` field updated
+- If everything is fine with the `body`, calls the `updateStatusContact (contactId, body)` function (write it) to update the contact in the database
+- According to the result of the function, it returns the updated contact object and the status `200`. Otherwise, it returns json with the key `{"message":"Not found"}` and the status `404`
 
 ### Acceptance criteria
 
-- A repository with homework has been created
-- A link to the repository (branch with homework) has been sent to the mentor for review
-- The code complies with the technical specifications (in particular, the requirements regarding the `body` structure, content and status of responses to requests, etc. must be strictly observed)
-- There are no commented sections of the code in the code
-- The project works correctly with the current LTS version of Node
+- Repository with homework created
+- Link to repository sent to mentor for review
+- Code meets project specifications
+- There are no commented code sections in the code
+- Project works correctly with current LTS version of Node

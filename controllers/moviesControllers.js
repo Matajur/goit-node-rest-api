@@ -43,3 +43,13 @@ export const updateMovie = async (req, res) => {
 
   res.json(result);
 };
+
+export const updateStatusMovie = async (req, res) => {
+  const { id } = req.params;
+  const result = await contactsServices.updateMovieById(id, req.body);
+  if (!result) {
+    throw HttpError(404);
+  }
+
+  res.json(result);
+};

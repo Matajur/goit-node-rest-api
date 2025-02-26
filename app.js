@@ -1,9 +1,11 @@
 import express from "express";
 import morgan from "morgan";
 import cors from "cors";
+import "dotenv/config";
 
 import movieRouter from "./routes/moviesRouter.js";
 import contactsRouter from "./routes/contactsRouter.js";
+import validationRouter from "./routes/validateRouter.js";
 
 const app = express();
 
@@ -13,6 +15,7 @@ app.use(express.json());
 
 app.use("/api/movies", movieRouter);
 app.use("/api/contacts", contactsRouter);
+app.use("api/validation", validationRouter);
 
 app.use((_, res) => {
   res.status(404).json({ message: "Route not found" });

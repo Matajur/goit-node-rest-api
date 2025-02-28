@@ -29,6 +29,7 @@ contactsRouter.delete("/:id", ctrlWrapper(deleteContact));
 
 contactsRouter.post(
   "/",
+  isEmptyBody,
   validateBody(createContactSchema),
   ctrlWrapper(createContact)
 );

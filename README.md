@@ -1,66 +1,106 @@
 # Tier 4. Module 5 - Fullstack. Back End Development: Node.js
 
-## Homework for Topic 6 - PostgresSQL and Sequelize
+## Homework for Topic 7 - Authentication and authorization
 
 ### Technical task
 
-Create a branch `03-postgresql` from the `master` branch. Continue creating the REST API to work with the contact collection.
+Create a branch `04-auth` from the `master` branch. Continue creating the REST API to work with the contact collection. Add the user authentication/authorization logic via [JWT](https://jwt.io/).
 
 #### Step 1
 
-Create an account on [Render](https://render.com/). Then create a new PostgresSQL database in the account, which should be called `db-contacts`:
+1. In code, create a user model for the `users` table.
 
-![New DB in Render](./readme-img/render.png)
+```JS
+{
+  password: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  email: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    unique: true,
+  },
+  subscription: {
+      type: DataTypes.ENUM,
+      values: ["starter", "pro", "business"],
+      defaultValue: "starter"
+  },
+  token: {
+    type: DataTypes.STRING,
+    defaultValue: null,
+  },
+}
+```
+
+2. Change the contact model so that each user can see only their own contacts. To do this, add a property to the contact model.
+
+```JS
+owner: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    }
+```
 
 #### Step 2
 
-Install the [pgAdmin](https://www.pgadmin.org/download/) or [DBeaver](https://dbeaver.io/) graphical editor for convenient work with the PosgresSQL database. Connect to the created cloud database via the graphical editor and create the `contacts` table.
+**Registration**
 
-![New table in DBeaver](./readme-img/dbeaver.png)
+1. Create an endpoint `/auth/register`
+2. Validate all required fields (email and password). If validation fails, return [Validation Error](https://textbook.edu.goit.global/lms-nodejs-homework/v1/uk/docs/hw-04/#registration-validation-error).
+
+If validation is successful, create a user in the User model based on the validated data. Use [bcrypt](https://www.npmjs.com/package/bcrypt) or [bcryptjs](https://www.npmjs.com/package/bcryptjs) to hash passwords
+
+- If the email is already in use by someone else, return [Conflict Error](https://textbook.edu.goit.global/lms-nodejs-homework/v1/uk/docs/hw-04/#registration-conflict-error).
+- Otherwise, return [Success Response](https://textbook.edu.goit.global/lms-nodejs-homework/v1/uk/docs/hw-04/#registration-success-response).
+
+**Login**
+
+1. Create an endpoint `/auth/login`.
+2. In the `User` model, find the user by `email`.
+3. Validate all required fields (email and password). If validation fails, return a [Validation Error](https://textbook.edu.goit.global/lms-nodejs-homework/v1/uk/docs/hw-04/#validation-error-login).
+
+- Otherwise, compare the password for the found user, if the passwords match, create a token, save it in the current user, and return a [Successful response](https://textbook.edu.goit.global/lms-nodejs-homework/v1/uk/docs/hw-04/#login-success-response).
+- If the password or email is incorrect, return an [Unauthorized Error](https://textbook.edu.goit.global/lms-nodejs-homework/v1/uk/docs/hw-04/#login-auth-error).
 
 #### Step 3
 
-Use the source code from **homework #2** and replace storing contacts from a json file with a database you created.
+**Token Validation**
 
-- Write code to create a connection to PosgresSQL using [Sequelize](https://www.npmjs.com/package/sequelize).
-- If the connection is successful, print the message `"Database connection successful"` to the console.
-- Be sure to handle the connection error. Print the error message to the console and end the process using `process.exit(1)`.
-- In the query processing functions, replace the code for CRUD operations on contacts from a file with Sequelize methods for working with a collection of contacts in the database.
+Create a middleware to validate the token and add it to all routes that need to be protected.
 
-**Sequelize model `contacts`:**
-
-```JS
-const User = sequelize.define(
-  'Contact', {
-    name: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    email: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    phone: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    favorite: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: false,
-    },
-  }
-```
+- The middleware takes the token from the `Authorization` headers, validates the token for validity.
+- In case of error, return an [Unauthorized Error](https://textbook.edu.goit.global/lms-nodejs-homework/v1/uk/docs/hw-04/#middleware-unauthorized-error).
+- If validation is successful, get the user `id` from the token. Find the user in the database with this `id`.
+- If the user exists and the token matches the one in the database, write their data to `req.user` and call `next()`.
+- If the user with this `id` does NOT exist or the tokens do not match, return an [Unauthorized Error](https://textbook.edu.goit.global/lms-nodejs-homework/v1/uk/docs/hw-04/#middleware-unauthorized-error).
 
 #### Step 4
 
-We have an additional `favorite` status field in our contacts, which takes the logical value `true` or `false`. It is responsible for whether the specified contact is in the favorites or not. It is necessary to implement a new router to update the contact status:
+**Logout**
 
-**PATCH /api/contacts/:contactId/favorite**
+1. Create an endpoint `/auth/logout`.
+2. Add a token validation middleware to the route.
 
-- Receives the `contactId` parameter
-- Receives the `body` in json format with the `favorite` field updated
-- If everything is fine with the `body`, calls the `updateStatusContact (contactId, body)` function (write it) to update the contact in the database
-- According to the result of the function, it returns the updated contact object and the status `200`. Otherwise, it returns json with the key `{"message":"Not found"}` and the status `404`
+- In the `User` model, find the user by `id`.
+- If the user does not exist, return an [Unauthorized Error](https://textbook.edu.goit.global/lms-nodejs-homework/v1/uk/docs/hw-04/#logout-unauthorized-error).
+- Otherwise, remove the token from the current user and return a [Successful response](https://textbook.edu.goit.global/lms-nodejs-homework/v1/uk/docs/hw-04/#logout-success-response).
+
+#### Step 5
+
+**Current user - get user data by token**
+
+1. Create endpoint `/auth/current`.
+2. Add token validation middleware to route.
+
+- If user does not exist, return [Unauthorized Error](https://textbook.edu.goit.global/lms-nodejs-homework/v1/uk/docs/hw-04/#current-user-unauthorized-error).
+- Otherwise return [Success response](https://textbook.edu.goit.global/lms-nodejs-homework/v1/uk/docs/hw-04/#current-user-success-response).
+
+#### Additional task (optional)
+
+- Create pagination for the contact collection (`GET` `/contacts?page=1&limit=20`).
+- Create filter for contacts by favorite field (`GET` `/contacts?favorite=true`).
+- Update user `subscription` via `PATCH` `/auth/subscription` endpoint. Subscription must have one of the following values `​​['starter', 'pro', 'business']`.
 
 ### Acceptance criteria
 

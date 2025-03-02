@@ -29,6 +29,7 @@ movieRouter.delete("/:id", ctrlWrapper(deleteMovie));
 
 movieRouter.post(
   "/",
+  isEmptyBody,
   validateBody(createMovieSchema),
   ctrlWrapper(createMovie)
 );

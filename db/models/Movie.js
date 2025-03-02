@@ -27,7 +27,7 @@ const Movie = sequelize.define("movie", {
   },
   type: {
     type: DataTypes.ENUM(...typeList),
-    defaultValue: "film",
+    defaultValue: typeList[0],
   },
   releaseYear: {
     type: DataTypes.STRING,
@@ -35,6 +35,10 @@ const Movie = sequelize.define("movie", {
     validate: {
       is: releaseYearRegexp,
     },
+  },
+  owner: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
   },
 });
 

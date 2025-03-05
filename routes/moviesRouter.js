@@ -4,6 +4,7 @@ import ctrlWrapper from "../decorators/ctrlWrapper.js";
 import validateBody from "../decorators/validateBody.js";
 
 import isEmptyBody from "../middlewares/isEmptyBody.js";
+import authenticate from "../middlewares/authenticate.js";
 
 import {
   getAllMovies,
@@ -19,33 +20,35 @@ import {
   updateMovieSchema,
 } from "../schemas/moviesSchemas.js";
 
-const movieRouter = express.Router();
+const moviesRouter = express.Router();
 
-movieRouter.get("/", ctrlWrapper(getAllMovies));
+moviesRouter.use(authenticate);
 
-movieRouter.get("/:id", ctrlWrapper(getOneMovie));
+moviesRouter.get("/", ctrlWrapper(getAllMovies));
 
-movieRouter.delete("/:id", ctrlWrapper(deleteMovie));
+moviesRouter.get("/:id", ctrlWrapper(getOneMovie));
 
-movieRouter.post(
+moviesRouter.delete("/:id", ctrlWrapper(deleteMovie));
+
+moviesRouter.post(
   "/",
   isEmptyBody,
   validateBody(createMovieSchema),
   ctrlWrapper(createMovie)
 );
 
-movieRouter.put(
+moviesRouter.put(
   "/:id",
   isEmptyBody,
   validateBody(updateMovieSchema),
   ctrlWrapper(updateMovie)
 );
 
-movieRouter.patch(
+moviesRouter.patch(
   "/:id/favorite",
   isEmptyBody,
   validateBody(updateMovieSchema),
   ctrlWrapper(updateStatusMovie)
 );
 
-export default movieRouter;
+export default moviesRouter;

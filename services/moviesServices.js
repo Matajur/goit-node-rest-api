@@ -1,11 +1,19 @@
 import Movie from "../db/models/Movie.js";
 
-export const getMovies = () => Movie.findAll();
+export const getMovies = (query) =>
+  Movie.findAll({
+    where: query,
+  });
 
-export const getMovieById = (id) => Movie.findByPk(id);
+// export const getMovieById = (id) => Movie.findByPk(id);
 
-export const removeMovie = async (id) => {
-  const movie = await getMovieById(id);
+export const getMovie = (query) =>
+  Movie.findOne({
+    where: query,
+  });
+
+export const removeMovie = async (query) => {
+  const movie = await getMovie(query);
   if (!movie) return null;
   await movie.destroy();
 
@@ -14,8 +22,8 @@ export const removeMovie = async (id) => {
 
 export const addMovie = (data) => Movie.create(data);
 
-export const updateMovieById = async (id, data) => {
-  const movie = await getMovieById(id);
+export const updateMovie = async (query, data) => {
+  const movie = await getMovie(query);
   if (!movie) return null;
 
   return movie.update(data, { returning: true });

@@ -1,11 +1,19 @@
 import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
 
 import User from "../db/models/User.js";
 
 import HttpError from "../helpers/HttpError.js";
 
-const { JWT_SECRET } = process.env;
+import { createToken } from "../helpers/jwt.js";
+
+export const findUser = (query) => User.findOne({ where: query });
+
+export const updateUser = async (query, data) => {
+  const user = await findUser(query);
+  if (!user) return null;
+
+  return user.update(data, { returning: true });
+};
 
 export const registerUser = async (payload) => {
   const { email, password } = payload;
@@ -40,7 +48,17 @@ export const loginUser = async (payload) => {
     throw HttpError(401, "Email or password is wrong");
   }
 
-  const token = jwt.sign({ email }, JWT_SECRET, { expiresIn: "24h" });
+  const token = createToken({ email });
+  await user.update(
+    { token },
+    {
+      returning: true,
+    }
+  );
 
   return { token: token, user: user };
+};
+
+export const logoutUser = async (query) => {
+  return updateUser(query, { token: null });
 };

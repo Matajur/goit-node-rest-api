@@ -22,3 +22,19 @@ export const login = async (req, res) => {
     },
   });
 };
+
+export const getCurrent = async (req, res) => {
+  const { email, subscription } = req.user;
+
+  res.json({
+    email,
+    subscription,
+  });
+};
+
+export const logout = async (req, res) => {
+  const { id } = req.user;
+  await authServices.logoutUser({ id });
+
+  res.status(204);
+};

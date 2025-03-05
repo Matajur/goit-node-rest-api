@@ -4,6 +4,7 @@ import ctrlWrapper from "../decorators/ctrlWrapper.js";
 import validateBody from "../decorators/validateBody.js";
 
 import isEmptyBody from "../middlewares/isEmptyBody.js";
+import authenticate from "../middlewares/authenticate.js";
 
 import {
   getAllContacts,
@@ -20,6 +21,8 @@ import {
 } from "../schemas/contactsSchemas.js";
 
 const contactsRouter = express.Router();
+
+contactsRouter.use(authenticate);
 
 contactsRouter.get("/", ctrlWrapper(getAllContacts));
 

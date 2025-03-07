@@ -4,7 +4,16 @@ import HttpError from "../helpers/HttpError.js";
 
 export const getAllContacts = async (req, res) => {
   const { id: owner } = req.user;
-  const result = await contactsServices.listContacts({ owner });
+  const { page = 1, limit = 20, favorite } = req.query;
+
+  const offset = (page - 1) * limit;
+  const query = { owner };
+
+  if (favorite !== undefined) {
+    query.favorite = favorite === "true";
+  }
+
+  const result = await contactsServices.listContacts(query, limit, offset);
 
   res.json(result);
 };

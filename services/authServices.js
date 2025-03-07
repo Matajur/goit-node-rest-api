@@ -6,6 +6,8 @@ import HttpError from "../helpers/HttpError.js";
 
 import { createToken } from "../helpers/jwt.js";
 
+import { subscriptionList } from "../constants/auth.js";
+
 export const findUser = (query) => User.findOne({ where: query });
 
 export const updateUser = async (query, data) => {
@@ -61,4 +63,14 @@ export const loginUser = async (payload) => {
 
 export const logoutUser = async (query) => {
   return updateUser(query, { token: null });
+};
+
+export const modifySubscription = async (payload) => {
+  const { id, subscription } = payload;
+
+  if (!subscriptionList.includes(subscription)) {
+    throw HttpError(400, "Invalid subscription type");
+  }
+
+  return updateUser({ id }, { subscription });
 };

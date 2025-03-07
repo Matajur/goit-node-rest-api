@@ -36,5 +36,18 @@ export const logout = async (req, res) => {
   const { id } = req.user;
   await authServices.logoutUser({ id });
 
-  res.status(204);
+  res.status(204).json();
+};
+
+export const updateSubscription = async (req, res) => {
+  const { id } = req.user;
+  const { subscription } = req.body;
+  const user = await authServices.modifySubscription({ id, subscription });
+
+  res.json({
+    user: {
+      email: user.email,
+      subscription: user.subscription,
+    },
+  });
 };

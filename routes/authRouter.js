@@ -7,7 +7,13 @@ import authenticate from "../middlewares/authenticate.js";
 
 import { authRegisterSchema, authLoginSchema } from "../schemas/authSchemas.js";
 
-import { register, login, getCurrent, logout } from "../controllers/authControllers.js";
+import {
+  register,
+  login,
+  getCurrent,
+  logout,
+  updateSubscription,
+} from "../controllers/authControllers.js";
 
 const authRouter = Router();
 
@@ -22,5 +28,11 @@ authRouter.post("/login", validateBody(authLoginSchema), ctrlWrapper(login));
 authRouter.get("/current", authenticate, ctrlWrapper(getCurrent));
 
 authRouter.post("/logout", authenticate, ctrlWrapper(logout));
+
+authRouter.patch(
+  "/subscription",
+  authenticate,
+  ctrlWrapper(updateSubscription)
+);
 
 export default authRouter;

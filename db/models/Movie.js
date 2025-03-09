@@ -36,6 +36,10 @@ const Movie = sequelize.define("movie", {
       is: releaseYearRegexp,
     },
   },
+  posterURL: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
   owner: {
     type: DataTypes.INTEGER,
     allowNull: false,

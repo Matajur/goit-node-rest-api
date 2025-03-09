@@ -74,3 +74,9 @@ export const modifySubscription = async (payload) => {
 
   return updateUser({ id }, { subscription });
 };
+
+export const modifyAvatar = async (payload) => {
+  const { id, avatarURL } = payload;
+
+  return updateUser({ id }, { avatarURL });
+};

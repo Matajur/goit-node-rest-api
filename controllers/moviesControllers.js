@@ -1,6 +1,11 @@
+import fs from "node:fs/promises";
+import path from "node:path";
+
 import * as moviesServices from "../services/moviesServices.js";
 
 import HttpError from "../helpers/HttpError.js";
+
+import cloudinary from "../helpers/cloudinary.js";
 
 export const getAllMovies = async (req, res) => {
   const { id: owner } = req.user;
@@ -41,8 +46,22 @@ export const deleteMovie = async (req, res) => {
 };
 
 export const createMovie = async (req, res) => {
+  let posterURL = null;
+  if (req.file) {
+    const { url } = await cloudinary.uploader.upload(req.file.path, {
+      folder: "posters",
+      use_filename: true,
+    });
+    posterURL = url;
+    await fs.unlink(req.file.path);
+  }
+
   const { id: owner } = req.user;
-  const result = await moviesServices.addMovie({ ...req.body, owner });
+  const result = await moviesServices.addMovie({
+    ...req.body,
+    posterURL,
+    owner,
+  });
 
   res.status(201).json(result);
 };

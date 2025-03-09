@@ -8,6 +8,7 @@ export const authRegisterSchema = Joi.object({
   }),
   password: Joi.string().min(6).required(),
   subscription: Joi.string().valid(...subscriptionList),
+  avatarURL: Joi.string(),
 });
 
 export const authLoginSchema = Joi.object({

@@ -1,12 +1,29 @@
+import fs from "node:fs/promises";
+import path from "node:path";
+import gravatar from "gravatar";
+
 import * as authServices from "../services/authServices.js";
 
+const avatarsPath = path.resolve("public/avatars");
+
 export const register = async (req, res) => {
-  const result = await authServices.registerUser(req.body);
+  let avatarURL = null;
+  if (req.file) {
+    const { path: oldPath, filename } = req.file;
+    const newPath = path.join(avatarsPath, filename);
+    await fs.rename(oldPath, newPath);
+    avatarURL = path.join("avatars", filename);
+  } else {
+    avatarURL = gravatar.url(req.body.email, { s: "200", d: "retro" }, true);
+  }
+
+  const result = await authServices.registerUser({ ...req.body, avatarURL });
 
   res.status(201).json({
     user: {
       email: result.email,
       subscription: result.subscription,
+      avatarURL: result.avatarURL,
     },
   });
 };
@@ -19,6 +36,7 @@ export const login = async (req, res) => {
     user: {
       email: result.user.email,
       subscription: result.user.subscription,
+      avatarURL: result.avatarURL,
     },
   });
 };
@@ -49,5 +67,22 @@ export const updateSubscription = async (req, res) => {
       email: user.email,
       subscription: user.subscription,
     },
+  });
+};
+
+export const updateAvatar = async (req, res) => {
+  const { id } = req.user;
+  let avatarURL = null;
+  if (req.file) {
+    const { path: oldPath, filename } = req.file;
+    const newPath = path.join(avatarsPath, filename);
+    await fs.rename(oldPath, newPath);
+    avatarURL = path.join("avatars", filename);
+  }
+
+  const result = await authServices.modifyAvatar({ id, avatarURL });
+
+  res.json({
+    avatarURL: result.avatarURL,
   });
 };

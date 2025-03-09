@@ -5,6 +5,7 @@ import validateBody from "../decorators/validateBody.js";
 
 import isEmptyBody from "../middlewares/isEmptyBody.js";
 import authenticate from "../middlewares/authenticate.js";
+import upload from "..//middlewares/upload.js";
 
 import {
   getAllMovies,
@@ -30,8 +31,11 @@ moviesRouter.get("/:id", ctrlWrapper(getOneMovie));
 
 moviesRouter.delete("/:id", ctrlWrapper(deleteMovie));
 
+// upload.files([{name: "poster", maxCount: 3}, {name: "avatar", maxCount: 1}])
+// upload.array("poster", 5)
 moviesRouter.post(
   "/",
+  upload.single("poster"),
   isEmptyBody,
   validateBody(createMovieSchema),
   ctrlWrapper(createMovie)

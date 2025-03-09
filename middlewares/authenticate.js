@@ -23,8 +23,12 @@ const authenticate = async (req, res, next) => {
     return next(HttpError(401, "Not authorized"));
   }
 
+  if (!data.email) {
+    return next(HttpError(401, "Not authorized"));
+  }
+
   const user = await findUser({ email: data.email });
-  console.log(user.token);
+
   if (!user || user.token !== token) {
     // return next(HttpError(401, "User not found"));
     return next(HttpError(401, "Not authorized"));

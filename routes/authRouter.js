@@ -2,6 +2,7 @@ import { Router } from "express";
 
 import ctrlWrapper from "../decorators/ctrlWrapper.js";
 import validateBody from "../decorators/validateBody.js";
+import upload from "..//middlewares/upload.js";
 
 import authenticate from "../middlewares/authenticate.js";
 
@@ -13,12 +14,14 @@ import {
   getCurrent,
   logout,
   updateSubscription,
+  updateAvatar,
 } from "../controllers/authControllers.js";
 
 const authRouter = Router();
 
 authRouter.post(
   "/register",
+  upload.single("avatar"),
   validateBody(authRegisterSchema),
   ctrlWrapper(register)
 );
@@ -33,6 +36,13 @@ authRouter.patch(
   "/subscription",
   authenticate,
   ctrlWrapper(updateSubscription)
+);
+
+authRouter.patch(
+  "/avatars",
+  upload.single("avatar"),
+  authenticate,
+  ctrlWrapper(updateAvatar)
 );
 
 export default authRouter;

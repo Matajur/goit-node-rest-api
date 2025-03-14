@@ -36,7 +36,7 @@ export const login = async (req, res) => {
     user: {
       email: result.user.email,
       subscription: result.user.subscription,
-      avatarURL: result.avatarURL,
+      avatarURL: result.user.avatarURL,
     },
   });
 };
@@ -76,8 +76,16 @@ export const updateAvatar = async (req, res) => {
   if (req.file) {
     const { path: oldPath, filename } = req.file;
     const newPath = path.join(avatarsPath, filename);
-    await fs.rename(oldPath, newPath);
-    avatarURL = path.join("avatars", filename);
+
+    try {
+      await fs.rename(oldPath, newPath);
+      avatarURL = path.join("avatars", filename);
+    } catch (error) {
+      await fs
+        .unlink(oldPath)
+        .catch((err) => console.error("Error deleting file:", err));
+      return next(error);
+    }
   }
 
   const result = await authServices.modifyAvatar({ id, avatarURL });

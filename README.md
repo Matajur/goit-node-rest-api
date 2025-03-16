@@ -1,80 +1,132 @@
 # Tier 4. Module 5 - Fullstack. Back End Development: Node.js
 
-## Homework for Topic 9 - Working with files and testing applications
+## Homework for Topic 11 - Websockets
 
 ### Technical task
 
-Create a branch `hw05-avatars` from the `master` branch. Continue creating the REST API for working with the contact collection. Add the ability to load a user's avatar via [Multer](https://github.com/expressjs/multer).
+Create a branch `hw06-email` from the `master` branch. Continue to create a REST API for working with the contact collection. Add user email verification after registration using the [ukr.net](https://ukr.net/) service and the Nodemailer package.
+
+**How the verification process should work**
+
+1. After registration, the user should receive an email to the email address specified during registration with a link to verify their email.
+2. After following the link in the received email for the first time, the user should receive a [Response with status 200](https://textbook.edu.goit.global/lms-nodejs-homework/v1/uk/docs/hw-06/#verification-success-response), which will mean successful email verification.
+3. After following the link again, the user should receive an [Error with status 404](https://textbook.edu.goit.global/lms-nodejs-homework/v1/uk/docs/hw-06/#verification-user-not-found).
 
 #### Step 1
 
-- Create a folder `public` for static distribution. In this folder, create a folder `avatars`.
-- Configure Express to distribute static files from the `public` folder.
-- Put any image in the `public/avatars` folder and check that static distribution works.
-- When you navigate to this URL, the browser will display the image. Shell `http://localhost:<port>/avatars/<filename with extension>`.
+Preparing to integrate with the [ukr.net](http://ukr.net/) API.
+
+Read the detailed instructions by clicking on the [link](https://www.edu.goit.global/uk/learn/13571785/17713435/17713705/training?blockId=25866702).
 
 #### Step 2
 
-**Registration**
+**Creating an Endpoint for Email Verification**
 
-Add a new `avatarURL` property to the user schema to store the image.
+1. Add two fields to the `User` model: `verificationToken` and `verify`. A value of `verify` equals `false`, meaning that the user's email has not yet been verified.
 
 ```JS
 {
-  ...
-  avatarURL: DataTypes.STRING,
-  ...
+  verify: {
+    type: DataType.BOOLEAN,
+    defaultValue: false,
+  },
+  verificationToken: {
+    type: DataType.STRING,
+  },
 }
 ```
 
-Use the [gravatar](https://www.npmjs.com/package/gravatar) package to immediately generate an avatar for a new user based on their `email` address when they register.
+2. Create an endpoint GET `/auth/verify/:verificationToken`(# verification-request), where we will search for the user in the `User` model using the `verificationToken` parameter
+
+- If the user with such a token is not found, it is necessary to return the ['Not Found' Error](https://textbook.edu.goit.global/lms-nodejs-homework/v1/uk/docs/hw-06/#verification-user-not-found).
+- If the user is found, set the `verificationToken` to `null`, and set the `verify` field to `true` in the user document and return a [Successful response](https://textbook.edu.goit.global/lms-nodejs-homework/v1/uk/docs/hw-06/#verification-success-response).
+
+**Verification request**
+
+```JS
+GET /auth/verify/:verificationToken
+```
+
+**Verification user Not Found**
+
+```JS
+Status: 404 Not Found
+ResponseBody: {
+  message: 'User not found'
+}
+```
+
+**Verification success response**
+
+```JS
+Status: 200 OK
+ResponseBody: {
+  message: 'Verification successful',
+}
+```
 
 #### Step 3
 
-When registering a user:
+**Adding sending an email to the user with a verification link**
 
-- Create a link to the user's avatar using [gravatar](https://www.npmjs.com/package/gravatar).
-- Save the resulting URL in the `avatarURL` field when creating the user.
+When creating a user during registration:
+
+- Create a `verificationToken` for the user and write it to the database (use the [uuid](https://www.npmjs.com/package/uuid) or [nanoid](https://www.npmjs.com/package/nanoid) package to generate the token)
+- Send an email to the user's email and specify the link for verifying the email (`/auth/verify/:verificationToken`) in the message
+  It is also necessary to take into account that now the user's login is not allowed if the email is not verified.
 
 #### Step 4
 
-- Add the ability to update the avatar by creating the `/auth/avatars` endpoint and using the `PATCH` method.
+**Adding resending of email to user with verification link**
 
-![Postman](./readme-img/image.png)
+It is necessary to foresee the option that the user may accidentally delete the letter. It may not reach the recipient for some reason. Our service for sending letters gave an error during registration, etc.
 
-```Python
-# Request
-PATCH /auth/avatars
-Content-Type: multipart/form-data
-Authorization: "Bearer {{token}}"
-RequestBody: uploaded file
+**POST /auth/verify**
 
-# Success
-Status: 200 OK
+- Receives `body` in `{email}` format.
+- If there is no required `email` field in `body`, returns json with key `{"message":"missing required field email"}` and status `400`.
+- If everything is fine with `body`, resend the letter with `verificationToken` to the specified email, but only if the user is not verified.
+- If the user has already passed verification, send json with key `{"message":"Verification has already been passed"}` with status `400 Bad Request`.
+
+**Resending an email request**
+
+```JS
+POST /auth/verify
 Content-Type: application/json
-ResponseBody: {
-"avatarURL": "here will be a link to the image"
-}
-
-# Failure
-Status: 401 Unauthorized
-Content-Type: application/json
-ResponseBody: {
-"message": "Not authorized"
+RequestBody: {
+  "email": "example@example.com"
 }
 ```
 
-- Create a `temp` folder in the root of the project and save the downloaded avatar in it.
-- Move the user avatar from the `temp` folder to the `public/avatars` folder and give it a unique name for the specific user.
-- The resulting URL `/avatars/<filename with extension>` and save it in the user `avatarURL` field.
+**Resending an email validation error**
 
-#### Additional task (optional)
+```JS
+Status: 400 Bad Request
+Content-Type: application/json
+ResponseBody:  {
+  "message": "Помилка від Joi або іншої бібліотеки валідації"
+}
+```
 
-Write unit tests for the login controller using [Jest](https://jestjs.io/ru/docs/getting-started):
+**Resending an email success response**
 
-- the response should have a status code of 200
-- the response should return a token
-- the response should return a `user` object with 2 fields `email` and `subscription` with data type `String`
+```JS
+Status: 200 Ok
+Content-Type: application/json
+ResponseBody: {
+  "message": "Verification email sent"
+}
+```
+
+**Resend email for verified user**
+
+```JS
+Status: 400 Bad Request
+Content-Type: application/json
+ResponseBody: {
+  message: "Verification has already been passed"
+}
+```
 
 ### Acceptance criteria
 

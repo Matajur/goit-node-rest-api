@@ -11,6 +11,12 @@ export const authRegisterSchema = Joi.object({
   avatarURL: Joi.string(),
 });
 
+export const authVerifySchema = Joi.object({
+  email: Joi.string().pattern(emailRegexp).required().messages({
+    "string.pattern.base": "Enter valid email",
+  }),
+});
+
 export const authLoginSchema = Joi.object({
   email: Joi.string().pattern(emailRegexp).required().messages({
     "string.pattern.base": "Enter valid email",

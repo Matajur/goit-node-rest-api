@@ -6,10 +6,16 @@ import upload from "..//middlewares/upload.js";
 
 import authenticate from "../middlewares/authenticate.js";
 
-import { authRegisterSchema, authLoginSchema } from "../schemas/authSchemas.js";
+import {
+  authRegisterSchema,
+  authVerifySchema,
+  authLoginSchema,
+} from "../schemas/authSchemas.js";
 
 import {
   register,
+  verify,
+  resendVerify,
   login,
   getCurrent,
   logout,
@@ -25,6 +31,14 @@ authRouter.post(
   validateBody(authRegisterSchema),
   ctrlWrapper(register)
 );
+
+authRouter.post(
+  "/verify",
+  validateBody(authVerifySchema),
+  ctrlWrapper(resendVerify)
+);
+
+authRouter.get("/verify/:verificationToken", ctrlWrapper(verify));
 
 authRouter.post("/login", validateBody(authLoginSchema), ctrlWrapper(login));
 
